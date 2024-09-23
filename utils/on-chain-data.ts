@@ -17,9 +17,11 @@ export const hasEnoughApproved = async (address: string): Promise<boolean> => {
     process.env.YOINK_ADDRESS as string
   );
   const tenTokens = ethers.utils.parseUnits("10", 18);
+  console.log(approvalAmount);
   if (approvalAmount.gte(tenTokens)) {
     return true;
   }
+
   return false;
 };
 
