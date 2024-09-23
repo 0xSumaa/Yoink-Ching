@@ -15,6 +15,7 @@ import HolderStateDisplay from "../components/intro-image.jsx";
 import RateLimitMessage from "../components/rate-limit-image.jsx";
 import YoinkedMessage from "../components/yoinked-image.jsx";
 import YoinkMessage from "../components/yoink-image.jsx";
+import landingPage from "../components/landing-page.jsx";
 import { checkRateLimit } from "../utils/rate-limit.js";
 
 config();
@@ -33,7 +34,7 @@ export const app = new Frog({
 const hono = app.hono;
 
 hono.get("/", async (c) => {
-  return c.redirect("https://warpcast.com/sumaa");
+  return c.html(landingPage);
 });
 
 app.frame("/api", async (c) => {
