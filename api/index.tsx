@@ -10,7 +10,9 @@ import { adjustBalance } from "../utils/format.js";
 import { calculateMultiplier } from "../utils/math.js";
 import { getBalance, getHolderState } from "../utils/fetch-data.js";
 import { formatBalance } from "../utils/format.js";
-import { SuccessImage, ErrorImage } from "../components/response-images.jsx";
+import { SuccessImage } from "../components/cover-image.jsx";
+import HolderStateDisplay from "../components/intro-image.jsx";
+
 config();
 
 export const app = new Frog({
@@ -33,9 +35,9 @@ app.frame("/", async (c) => {
       intents: [<Button action="/intro">🚀 Start</Button>],
     });
   } catch (error) {
-    return c.res({
-      image: <ErrorImage message="Error loading data" />,
-      intents: [<Button action="/">Try Again</Button>],
+    return c.error({
+      message: "Error loading data",
+      statusCode: 400,
     });
   }
 });
@@ -49,65 +51,12 @@ app.frame("/intro", async (c) => {
     );
     return c.res({
       image: (
-        <div
-          style={{
-            alignItems: "center",
-            background: "white",
-            backgroundSize: "100% 100%",
-            display: "flex",
-            flexDirection: "column",
-            height: "100%",
-            justifyContent: "center",
-            textAlign: "center",
-            width: "100%",
-          }}
-        >
-          <div
-            style={{
-              color: "green",
-              fontSize: 64,
-              fontStyle: "normal",
-              display: "flex",
-              letterSpacing: "-0.025em",
-              lineHeight: 1.4,
-              padding: "0 120px",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            {holderState.holder} has the flag
-          </div>
-          <div
-            style={{
-              color: "black",
-              fontSize: 36,
-              fontStyle: "normal",
-              letterSpacing: "-0.025em",
-              display: "flex",
-              lineHeight: 1.4,
-              marginTop: 20,
-              padding: "0 120px",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            since {holderState.timeHeld}
-          </div>
-          <div
-            style={{
-              color: "black",
-              fontSize: 36,
-              fontStyle: "normal",
-              letterSpacing: "-0.025em",
-              display: "flex",
-              lineHeight: 1.4,
-              marginTop: 20,
-              padding: "0 120px",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            {holderState.timeLeft} left before winning {formatBalance(balance)}{" "}
-            MOXIE
-          </div>
-        </div>
+        <HolderStateDisplay
+          holder={holderState.holder}
+          timeHeld={holderState.timeHeld}
+          timeLeft={holderState.timeLeft}
+          balance={balance}
+        />
       ),
       intents: [
         sufficientApproval ? (
@@ -122,9 +71,9 @@ app.frame("/intro", async (c) => {
       ],
     });
   } catch (error) {
-    return c.res({
-      image: <ErrorImage message="Error loading data" />,
-      intents: [<Button action="/">Try Again</Button>],
+    return c.error({
+      message: "Error loading data",
+      statusCode: 400,
     });
   }
 });
@@ -182,9 +131,9 @@ app.frame("/yoink", async (c) => {
       ],
     });
   } catch (error) {
-    return c.res({
-      image: <ErrorImage message="Error Yoinking" />,
-      intents: [<Button action="/">Try Again</Button>],
+    return c.error({
+      message: "Error Yoinking",
+      statusCode: 400,
     });
   }
 });
@@ -241,9 +190,9 @@ app.frame("/yoinked", async (c) => {
       intents: [],
     });
   } catch (error) {
-    return c.res({
-      image: <ErrorImage message="Error Yoinking" />,
-      intents: [<Button action="/">Try Again</Button>],
+    return c.error({
+      message: "Yoinked, but error fetching completion screen",
+      statusCode: 400,
     });
   }
 });

@@ -1,55 +1,19 @@
-import { formatBalance } from "../utils/format.js";
 import { BigNumber } from "ethers";
+import { formatBalance } from "../utils/format.js";
 
-export const SuccessImage = ({ balance }: { balance: BigNumber }) => (
-  <div
-    style={{
-      alignItems: "center",
-      background: "white",
-      backgroundSize: "100% 100%",
-      display: "flex",
-      flexDirection: "column",
-      flexWrap: "nowrap",
-      height: "100%",
-      justifyContent: "center",
-      textAlign: "center",
-      width: "100%",
-    }}
-  >
-    <div
-      style={{
-        color: "red",
-        fontSize: 124,
-        fontStyle: "normal",
-        letterSpacing: "-0.025em",
-        display: "flex",
-        lineHeight: 1.4,
-        marginTop: 30,
-        padding: "0 120px",
-        whiteSpace: "pre-wrap",
-      }}
-    >
-      Yoink-Ching!
-    </div>
-    <div
-      style={{
-        color: "black",
-        fontSize: 36,
-        fontStyle: "normal",
-        letterSpacing: "-0.025em",
-        display: "flex",
-        lineHeight: 1.4,
-        marginTop: 10,
-        padding: "0 120px",
-        whiteSpace: "pre-wrap",
-      }}
-    >
-      yoink and hodl for 24 hours to win {formatBalance(balance)} MOXIE
-    </div>
-  </div>
-);
+interface HolderStateDisplayProps {
+  holder: string;
+  timeHeld: string;
+  timeLeft: string;
+  balance: BigNumber;
+}
 
-export const ErrorImage = ({ message }: { message: string }) => (
+const HolderStateDisplay = ({
+  holder,
+  timeHeld,
+  timeLeft,
+  balance,
+}: HolderStateDisplayProps) => (
   <div
     style={{
       alignItems: "center",
@@ -65,16 +29,17 @@ export const ErrorImage = ({ message }: { message: string }) => (
   >
     <div
       style={{
-        color: "red",
-        fontSize: 72,
+        color: "green",
+        fontSize: 64,
         fontStyle: "normal",
+        display: "flex",
         letterSpacing: "-0.025em",
         lineHeight: 1.4,
         padding: "0 120px",
         whiteSpace: "pre-wrap",
       }}
     >
-      {message}
+      {holder} has the flag
     </div>
     <div
       style={{
@@ -82,13 +47,31 @@ export const ErrorImage = ({ message }: { message: string }) => (
         fontSize: 36,
         fontStyle: "normal",
         letterSpacing: "-0.025em",
+        display: "flex",
         lineHeight: 1.4,
         marginTop: 20,
         padding: "0 120px",
         whiteSpace: "pre-wrap",
       }}
     >
-      Please try again
+      since {timeHeld}
+    </div>
+    <div
+      style={{
+        color: "black",
+        fontSize: 36,
+        fontStyle: "normal",
+        letterSpacing: "-0.025em",
+        display: "flex",
+        lineHeight: 1.4,
+        marginTop: 20,
+        padding: "0 120px",
+        whiteSpace: "pre-wrap",
+      }}
+    >
+      {timeLeft} left before winning {formatBalance(balance)} MOXIE
     </div>
   </div>
 );
+
+export default HolderStateDisplay;
