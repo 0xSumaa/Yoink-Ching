@@ -1,8 +1,8 @@
 type YoinkedMessageProps = {
   multiplier: string;
 };
-
 function YoinkedMessage({ multiplier }: YoinkedMessageProps) {
+  const backgroundImageUrl = "https://i.ibb.co/6NzyKtx/88we6ih803w21.png";
   return (
     <div
       style={{
@@ -15,12 +15,16 @@ function YoinkedMessage({ multiplier }: YoinkedMessageProps) {
         justifyContent: "center",
         textAlign: "center",
         width: "100%",
+        backgroundImage: `url('${backgroundImageUrl}')`,
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",
       }}
     >
       <div
         style={{
-          color: "green",
-          fontSize: 72,
+          color: "black",
+          fontSize: 96,
+          fontWeight: "bold",
           fontStyle: "normal",
           letterSpacing: "-0.025em",
           lineHeight: 1.4,
@@ -33,7 +37,8 @@ function YoinkedMessage({ multiplier }: YoinkedMessageProps) {
       <div
         style={{
           color: "black",
-          fontSize: 36,
+          fontSize: 48,
+          fontWeight: "bold",
           fontStyle: "normal",
           letterSpacing: "-0.025em",
           display: "flex",
