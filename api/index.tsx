@@ -6,14 +6,11 @@ import MoxieABI from "../constants/erc20abi.json";
 import YoinkABI from "../constants/yoinkabi.json";
 import { config } from "dotenv";
 import { ethers } from "ethers";
-import { formatBalance, adjustBalance } from "../utils/format.js";
-import { neynar } from "frog/middlewares";
+import { adjustBalance } from "../utils/format.js";
 import { calculateMultiplier } from "../utils/math.js";
-import {
-  hasEnoughApproved,
-  fetchBalance,
-  fetchHolderState,
-} from "../utils/on-chain-data.js";
+import { getBalance, getHolderState } from "../utils/fetch-data.js";
+import { formatBalance } from "../utils/format.js";
+import { SuccessImage, ErrorImage } from "../components/response-images.jsx";
 config();
 
 export const app = new Frog({
@@ -30,103 +27,14 @@ export const app = new Frog({
 
 app.frame("/", async (c) => {
   try {
-    const balance = await fetchBalance();
-
+    const balance = await getBalance();
     return c.res({
-      image: (
-        <div
-          style={{
-            alignItems: "center",
-            background: "white",
-            backgroundSize: "100% 100%",
-            display: "flex",
-            flexDirection: "column",
-            flexWrap: "nowrap",
-            height: "100%",
-            justifyContent: "center",
-            textAlign: "center",
-            width: "100%",
-          }}
-        >
-          <div
-            style={{
-              color: "red",
-              fontSize: 124,
-              fontStyle: "normal",
-              letterSpacing: "-0.025em",
-              display: "flex",
-              lineHeight: 1.4,
-              marginTop: 30,
-              padding: "0 120px",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            Yoink-Ching!
-          </div>
-          <div
-            style={{
-              color: "black",
-              fontSize: 36,
-              fontStyle: "normal",
-              letterSpacing: "-0.025em",
-              display: "flex",
-              lineHeight: 1.4,
-              marginTop: 10,
-              padding: "0 120px",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            yoink and hodl for 24 hours to win {formatBalance(balance)} MOXIE
-          </div>
-        </div>
-      ),
+      image: <SuccessImage balance={balance} />,
       intents: [<Button action="/intro">🚀 Start</Button>],
     });
   } catch (error) {
     return c.res({
-      image: (
-        <div
-          style={{
-            alignItems: "center",
-            background: "white",
-            backgroundSize: "100% 100%",
-            display: "flex",
-            flexDirection: "column",
-            height: "100%",
-            justifyContent: "center",
-            textAlign: "center",
-            width: "100%",
-          }}
-        >
-          <div
-            style={{
-              color: "red",
-              fontSize: 72,
-              fontStyle: "normal",
-              letterSpacing: "-0.025em",
-              lineHeight: 1.4,
-              padding: "0 120px",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            Error loading data
-          </div>
-          <div
-            style={{
-              color: "black",
-              fontSize: 36,
-              fontStyle: "normal",
-              letterSpacing: "-0.025em",
-              lineHeight: 1.4,
-              marginTop: 20,
-              padding: "0 120px",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            Please try again
-          </div>
-        </div>
-      ),
+      image: <ErrorImage message="Error loading data" />,
       intents: [<Button action="/">Try Again</Button>],
     });
   }
@@ -136,11 +44,9 @@ app.frame("/intro", async (c) => {
   try {
     const walletAddress = "0x29F0cbED796f0C6663f1ca3F0e3c51De29c78Ec8";
     // const walletAddress = c.var.interactor?.verifications?.[0];
-    const [holderState, balance, sufficientApproval] = await Promise.all([
-      fetchHolderState(),
-      fetchBalance(),
-      hasEnoughApproved(walletAddress as string),
-    ]);
+    const { holderState, balance, sufficientApproval } = await getHolderState(
+      walletAddress
+    );
     return c.res({
       image: (
         <div
@@ -217,6 +123,16 @@ app.frame("/intro", async (c) => {
     });
   } catch (error) {
     return c.res({
+      image: <ErrorImage message="Error loading data" />,
+      intents: [<Button action="/">Try Again</Button>],
+    });
+  }
+});
+
+app.frame("/yoink", async (c) => {
+  try {
+    const balance = await getBalance();
+    return c.res({
       image: (
         <div
           style={{
@@ -233,7 +149,7 @@ app.frame("/intro", async (c) => {
         >
           <div
             style={{
-              color: "red",
+              color: "green",
               fontSize: 72,
               fontStyle: "normal",
               letterSpacing: "-0.025em",
@@ -242,7 +158,7 @@ app.frame("/intro", async (c) => {
               whiteSpace: "pre-wrap",
             }}
           >
-            Error loading data
+            Approved, Yoink Away!
           </div>
           <div
             style={{
@@ -251,15 +167,23 @@ app.frame("/intro", async (c) => {
               fontStyle: "normal",
               letterSpacing: "-0.025em",
               lineHeight: 1.4,
-              marginTop: 20,
               padding: "0 120px",
               whiteSpace: "pre-wrap",
             }}
           >
-            Please try again
+            yoink and hodl for 24 hours to win {formatBalance(balance)} MOXIE
           </div>
         </div>
       ),
+      intents: [
+        <Button.Transaction target="/yoink-flag" action="/yoinked">
+          Yoink for 10 MOXIE 😈
+        </Button.Transaction>,
+      ],
+    });
+  } catch (error) {
+    return c.res({
+      image: <ErrorImage message="Error Yoinking" />,
       intents: [<Button action="/">Try Again</Button>],
     });
   }
@@ -267,7 +191,7 @@ app.frame("/intro", async (c) => {
 
 app.frame("/yoinked", async (c) => {
   try {
-    const adjustedBalance = adjustBalance(await fetchBalance());
+    const adjustedBalance = adjustBalance(await getBalance());
     const multiplier = calculateMultiplier(adjustedBalance.toString(), 10);
     return c.res({
       image: (
@@ -318,49 +242,7 @@ app.frame("/yoinked", async (c) => {
     });
   } catch (error) {
     return c.res({
-      image: (
-        <div
-          style={{
-            alignItems: "center",
-            background: "white",
-            backgroundSize: "100% 100%",
-            display: "flex",
-            flexDirection: "column",
-            height: "100%",
-            justifyContent: "center",
-            textAlign: "center",
-            width: "100%",
-          }}
-        >
-          <div
-            style={{
-              color: "red",
-              fontSize: 72,
-              fontStyle: "normal",
-              letterSpacing: "-0.025em",
-              lineHeight: 1.4,
-              padding: "0 120px",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            Error Yoinking
-          </div>
-          <div
-            style={{
-              color: "black",
-              fontSize: 36,
-              fontStyle: "normal",
-              letterSpacing: "-0.025em",
-              lineHeight: 1.4,
-              marginTop: 20,
-              padding: "0 120px",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            Please try again
-          </div>
-        </div>
-      ),
+      image: <ErrorImage message="Error Yoinking" />,
       intents: [<Button action="/">Try Again</Button>],
     });
   }
@@ -390,9 +272,8 @@ app.transaction("/yoink-flag", (c) => {
     value: BigInt(0),
   });
 });
-// @ts-ignore
-const isEdgeFunction = typeof EdgeFunction !== "undefined";
-const isProduction = isEdgeFunction || import.meta.env?.MODE !== "development";
+
+const isProduction = import.meta.env?.MODE !== "development";
 devtools(app, isProduction ? { assetsPath: "/.frog" } : { serveStatic });
 
 export const GET = handle(app);

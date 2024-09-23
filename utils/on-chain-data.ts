@@ -3,7 +3,7 @@ import { config } from "dotenv";
 import MoxieABI from "../constants/erc20abi.json";
 import YoinkABI from "../constants/yoinkabi.json";
 import { HolderState } from "../types/on-chain-types.js";
-import { formatAddress, formatBalance, formatElapsedTime } from "./format.js";
+import { formatAddress, formatElapsedTime } from "./format.js";
 config();
 
 export const hasEnoughApproved = async (address: string): Promise<boolean> => {
