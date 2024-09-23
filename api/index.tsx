@@ -9,10 +9,13 @@ import { ethers } from "ethers";
 import { adjustBalance } from "../utils/format.js";
 import { calculateMultiplier } from "../utils/math.js";
 import { getBalance, getHolderState } from "../utils/fetch-data.js";
-import { formatBalance } from "../utils/format.js";
 import { neynar } from "frog/middlewares";
 import { SuccessImage } from "../components/cover-image.jsx";
 import HolderStateDisplay from "../components/intro-image.jsx";
+import RateLimitMessage from "../components/rate-limit-image.jsx";
+import YoinkedMessage from "../components/yoinked-image.jsx";
+import YoinkMessage from "../components/yoink-image.jsx";
+import { checkRateLimit } from "../utils/rate-limit.js";
 
 config();
 
@@ -20,13 +23,12 @@ export const app = new Frog({
   assetsPath: "/",
   basePath: "/api",
   title: "Yoink-Ching",
-});
-// }).use(
-//   neynar({
-//     apiKey: process.env.NEYNAR_FROG_FM as string,
-//     features: ["interactor"],
-//   })
-// );
+}).use(
+  neynar({
+    apiKey: process.env.NEYNAR_FROG_FM as string,
+    features: ["interactor"],
+  })
+);
 
 app.frame("/", async (c) => {
   try {
@@ -45,12 +47,27 @@ app.frame("/", async (c) => {
 
 app.frame("/intro", async (c) => {
   try {
-    const walletAddress = "0x29F0cbED796f0C6663f1ca3F0e3c51De29c78Ec8";
-    // let walletAddress;
-    // walletAddress = c.var.interactor?.verifications?.[0] as string;
-    // if (!walletAddress) {
-    //   walletAddress = c.var.interactor?.custodyAddress as string;
-    // }
+    const fid = c.var.interactor?.fid;
+
+    if (!fid) {
+      return c.error({
+        message: "Error fetching fid",
+        statusCode: 400,
+      });
+    }
+
+    const canProceed = await checkRateLimit(fid.toString());
+
+    if (!canProceed) {
+      return c.res({
+        image: <RateLimitMessage />,
+        intents: [<Button action="/">Go Back</Button>],
+      });
+    }
+
+    const walletAddress =
+      (c.var.interactor?.verifications?.[0] as string) ||
+      (c.var.interactor?.custodyAddress as string);
     const { holderState, balance, sufficientApproval } = await getHolderState(
       walletAddress
     );
@@ -87,48 +104,7 @@ app.frame("/yoink", async (c) => {
   try {
     const balance = await getBalance();
     return c.res({
-      image: (
-        <div
-          style={{
-            alignItems: "center",
-            background: "white",
-            backgroundSize: "100% 100%",
-            display: "flex",
-            flexDirection: "column",
-            height: "100%",
-            justifyContent: "center",
-            textAlign: "center",
-            width: "100%",
-          }}
-        >
-          <div
-            style={{
-              color: "green",
-              fontSize: 72,
-              fontStyle: "normal",
-              letterSpacing: "-0.025em",
-              lineHeight: 1.4,
-              padding: "0 120px",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            Approved, Yoink Away!
-          </div>
-          <div
-            style={{
-              color: "black",
-              fontSize: 36,
-              fontStyle: "normal",
-              letterSpacing: "-0.025em",
-              lineHeight: 1.4,
-              padding: "0 120px",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            yoink and hodl for 24 hours to win {formatBalance(balance)} MOXIE
-          </div>
-        </div>
-      ),
+      image: <YoinkMessage balance={balance} />,
       intents: [
         <Button.Transaction target="/yoink-flag" action="/yoinked">
           Yoink for 10 MOXIE 😈
@@ -148,50 +124,7 @@ app.frame("/yoinked", async (c) => {
     const adjustedBalance = adjustBalance(await getBalance());
     const multiplier = calculateMultiplier(adjustedBalance.toString(), 10);
     return c.res({
-      image: (
-        <div
-          style={{
-            alignItems: "center",
-            background: "white",
-            backgroundSize: "100% 100%",
-            display: "flex",
-            flexDirection: "column",
-            height: "100%",
-            justifyContent: "center",
-            textAlign: "center",
-            width: "100%",
-          }}
-        >
-          <div
-            style={{
-              color: "green",
-              fontSize: 72,
-              fontStyle: "normal",
-              letterSpacing: "-0.025em",
-              lineHeight: 1.4,
-              padding: "0 120px",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            Yoinked!
-          </div>
-          <div
-            style={{
-              color: "black",
-              fontSize: 36,
-              fontStyle: "normal",
-              letterSpacing: "-0.025em",
-              display: "flex",
-              lineHeight: 1.4,
-              marginTop: 20,
-              padding: "0 120px",
-              whiteSpace: "pre-wrap",
-            }}
-          >
-            hodling for 24 hours yields {multiplier}x
-          </div>
-        </div>
-      ),
+      image: <YoinkedMessage multiplier={multiplier} />,
       intents: [],
     });
   } catch (error) {
