@@ -5,7 +5,7 @@ import { handle } from "frog/vercel";
 import MoxieABI from "../constants/erc20abi.json";
 import YoinkABI from "../constants/yoinkabi.json";
 import { config } from "dotenv";
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { adjustBalance } from "../utils/format.js";
 import { calculateMultiplier } from "../utils/math.js";
 import { getBalance, getHolderState } from "../utils/fetch-data.js";
@@ -38,9 +38,9 @@ app.frame("/", async (c) => {
       intents: [<Button action="/intro">🚀 Start</Button>],
     });
   } catch (error) {
-    return c.error({
-      message: "Error loading data",
-      statusCode: 400,
+    return c.res({
+      image: <SuccessImage balance={new BigNumber(0, "0x")} />,
+      intents: [],
     });
   }
 });
@@ -93,9 +93,9 @@ app.frame("/intro", async (c) => {
       ],
     });
   } catch (error) {
-    return c.error({
-      message: "Error loading data",
-      statusCode: 400,
+    return c.res({
+      image: <SuccessImage balance={new BigNumber(0, "0x")} />,
+      intents: [],
     });
   }
 });
@@ -112,9 +112,9 @@ app.frame("/yoink", async (c) => {
       ],
     });
   } catch (error) {
-    return c.error({
-      message: "Error Yoinking",
-      statusCode: 400,
+    return c.res({
+      image: <SuccessImage balance={new BigNumber(0, "0x")} />,
+      intents: [],
     });
   }
 });
@@ -128,9 +128,9 @@ app.frame("/yoinked", async (c) => {
       intents: [],
     });
   } catch (error) {
-    return c.error({
-      message: "Yoinked, but error fetching completion screen",
-      statusCode: 400,
+    return c.res({
+      image: <SuccessImage balance={new BigNumber(0, "0x")} />,
+      intents: [],
     });
   }
 });
