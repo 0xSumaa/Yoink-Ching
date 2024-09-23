@@ -10,6 +10,7 @@ import { adjustBalance } from "../utils/format.js";
 import { calculateMultiplier } from "../utils/math.js";
 import { getBalance, getHolderState } from "../utils/fetch-data.js";
 import { formatBalance } from "../utils/format.js";
+import { neynar } from "frog/middlewares";
 import { SuccessImage } from "../components/cover-image.jsx";
 import HolderStateDisplay from "../components/intro-image.jsx";
 
@@ -45,7 +46,11 @@ app.frame("/", async (c) => {
 app.frame("/intro", async (c) => {
   try {
     const walletAddress = "0x29F0cbED796f0C6663f1ca3F0e3c51De29c78Ec8";
-    // const walletAddress = c.var.interactor?.verifications?.[0];
+    // let walletAddress;
+    // walletAddress = c.var.interactor?.verifications?.[0] as string;
+    // if (!walletAddress) {
+    //   walletAddress = c.var.interactor?.custodyAddress as string;
+    // }
     const { holderState, balance, sufficientApproval } = await getHolderState(
       walletAddress
     );
