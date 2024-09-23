@@ -21,16 +21,22 @@ config();
 
 export const app = new Frog({
   assetsPath: "/",
-  basePath: "/api",
+  basePath: "/",
   title: "Yoink-Ching",
+  browserLocation: "https://warpcast.com/sumaa",
 }).use(
   neynar({
     apiKey: process.env.NEYNAR_FROG_FM as string,
     features: ["interactor"],
   })
 );
+const hono = app.hono;
 
-app.frame("/", async (c) => {
+hono.get("/", async (c) => {
+  return c.redirect("https://warpcast.com/sumaa");
+});
+
+app.frame("/api", async (c) => {
   try {
     const balance = await getBalance();
     return c.res({
