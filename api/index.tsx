@@ -17,6 +17,7 @@ import YoinkedMessage from "../components/yoinked-image.jsx";
 import YoinkMessage from "../components/yoink-image.jsx";
 import landingPage from "../components/landing-page.jsx";
 import { checkRateLimit } from "../utils/rate-limit.js";
+
 config();
 
 export const app = new Frog({
