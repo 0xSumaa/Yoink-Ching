@@ -1,7 +1,7 @@
 export const landingPage = (
   <html>
     <head>
-      <title>Yoink-Ching Landing Page</title>
+      <title>Yoink-Ching</title>
       <style>
         {`
           body {
