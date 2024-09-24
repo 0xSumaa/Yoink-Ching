@@ -8,6 +8,7 @@
     "deploy": "vercel"
   },
   "dependencies": {
+    "@types/ioredis": "^5.0.0",
     "@types/react": "^18.3.9",
     "dotenv": "^16.4.5",
     "ethers": "5.7.0",

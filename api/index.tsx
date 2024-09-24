@@ -14,13 +14,13 @@ import {
   getHolderState,
 } from "../utils/fetch-data.js";
 import { neynar } from "frog/middlewares";
-import CoverImage from "../components/cover-image.jsx";
-import HolderStateDisplay from "../components/intro-image.jsx";
-import RateLimitMessage from "../components/rate-limit-image.jsx";
-import YoinkedMessage from "../components/yoinked-image.jsx";
-import YoinkMessage from "../components/yoink-image.jsx";
-import landingPage from "../components/landing-page.jsx";
-import ClaimedImage from "../components/claimed-image.jsx";
+import CoverImage from "../components/cover-image.js";
+import HolderStateDisplay from "../components/intro-image.js";
+import RateLimitMessage from "../components/rate-limit-image.js";
+import YoinkedMessage from "../components/yoinked-image.js";
+import YoinkMessage from "../components/yoink-image.js";
+import landingPage from "../components/landing-page.js";
+import ClaimedImage from "../components/claimed-image.js";
 import { checkRateLimit } from "../utils/rate-limit.js";
 
 config();
@@ -36,7 +36,7 @@ export const app = new Frog<{ State: State }>({
     userBalance: BigNumber.from(0),
   },
   assetsPath: "/",
-  basePath: "/api",
+  basePath: "/",
   title: "Yoink-Ching",
   browserLocation: "https://warpcast.com/sumaa",
 }).use(
@@ -47,11 +47,11 @@ export const app = new Frog<{ State: State }>({
 );
 const hono = app.hono;
 
-// hono.get("/", async (c) => {
-//   return c.html(landingPage);
-// });
+hono.get("/", async (c) => {
+  return c.html(landingPage);
+});
 
-app.frame("/", async (c) => {
+app.frame("/api", async (c) => {
   try {
     const { holderAddy, contractBalance, gameInProgress } =
       await getGameState();
