@@ -35,18 +35,41 @@ export const fetchNumberOfYoinks = async (): Promise<string> => {
   return numOfYoinks.toString();
 };
 
-export const fetchBalance = async (): Promise<BigNumber> => {
+export const isGameInProgress = async (): Promise<boolean> => {
+  const yoinkContract = buildContract(
+    process.env.YOINK_ADDRESS as string,
+    YoinkABI
+  );
+  const lastYoinked: BigNumber = await yoinkContract.lastYoinked();
+  const timeOfYoink = lastYoinked.toNumber();
+
+  const now = Math.floor(Date.now() / 1000); // Current time in seconds
+  const elapsedSeconds = now - timeOfYoink;
+  const totalSecondsIn24Hours = 24 * 60 * 60;
+
+  return elapsedSeconds < totalSecondsIn24Hours;
+};
+
+export const fetchBalance = async (address: string): Promise<BigNumber> => {
   const moxieContract = buildContract(
     process.env.MOXIE_ADDRESS as string,
     MoxieABI
   );
 
-  const balance: BigNumber = await moxieContract.balanceOf(
-    process.env.YOINK_ADDRESS as string
-  );
+  const balance: BigNumber = await moxieContract.balanceOf(address);
 
   return balance;
 };
+
+export const fetchHolderAddy = async (): Promise<string> => {
+  const yoinkContract = buildContract(
+    process.env.YOINK_ADDRESS as string,
+    YoinkABI
+  );
+  const holder = await yoinkContract.lastYoinker();
+  return formatAddress(holder);
+};
+
 export const fetchHolderState = async (): Promise<HolderState> => {
   const yoinkContract = buildContract(
     process.env.YOINK_ADDRESS as string,

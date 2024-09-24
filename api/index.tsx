@@ -5,22 +5,36 @@ import { handle } from "frog/vercel";
 import MoxieABI from "../constants/erc20abi.json";
 import YoinkABI from "../constants/yoinkabi.json";
 import { config } from "dotenv";
-import { ethers } from "ethers";
+import { ethers, BigNumber } from "ethers";
 import { adjustBalance } from "../utils/format.js";
 import { calculateMultiplier } from "../utils/math.js";
-import { getBalance, getHolderState } from "../utils/fetch-data.js";
+import {
+  getBalance,
+  getGameState,
+  getHolderState,
+} from "../utils/fetch-data.js";
 import { neynar } from "frog/middlewares";
-import { SuccessImage } from "../components/cover-image.jsx";
+import CoverImage from "../components/cover-image.jsx";
 import HolderStateDisplay from "../components/intro-image.jsx";
 import RateLimitMessage from "../components/rate-limit-image.jsx";
 import YoinkedMessage from "../components/yoinked-image.jsx";
 import YoinkMessage from "../components/yoink-image.jsx";
 import landingPage from "../components/landing-page.jsx";
+import ClaimedImage from "../components/claimed-image.jsx";
 import { checkRateLimit } from "../utils/rate-limit.js";
 
 config();
 
-export const app = new Frog({
+type State = {
+  contractBalance: BigNumber;
+  userBalance: BigNumber;
+};
+
+export const app = new Frog<{ State: State }>({
+  initialState: {
+    contractBalance: BigNumber.from(0),
+    userBalance: BigNumber.from(0),
+  },
   assetsPath: "/",
   basePath: "/",
   title: "Yoink-Ching",
@@ -39,10 +53,26 @@ hono.get("/", async (c) => {
 
 app.frame("/api", async (c) => {
   try {
-    const balance = await getBalance();
+    const { holderAddy, contractBalance, gameInProgress } =
+      await getGameState();
     return c.res({
-      image: <SuccessImage balance={balance} />,
-      intents: [<Button action="/intro">🚀 Start</Button>],
+      image: (
+        <CoverImage
+          balance={contractBalance}
+          gameInProgress={gameInProgress}
+          holderAddy={holderAddy}
+        />
+      ),
+      intents: [
+        gameInProgress ? (
+          <Button action="/intro">🚀 Start</Button>
+        ) : (
+          <Button.Transaction target="/claim" action="/claimed">
+            {" "}
+            Claim MOXIE{" "}
+          </Button.Transaction>
+        ),
+      ],
     });
   } catch (error) {
     return c.error({
@@ -75,16 +105,21 @@ app.frame("/intro", async (c) => {
     const walletAddress =
       (c.var.interactor?.verifications?.[0] as string) ||
       (c.var.interactor?.custodyAddress as string);
-    const { holderState, balance, sufficientApproval } = await getHolderState(
-      walletAddress
-    );
+    const { holderState, contractBalance, userBalance, sufficientApproval } =
+      await getHolderState(walletAddress);
+
+    const state = c.deriveState((previousState) => {
+      previousState.contractBalance = contractBalance;
+      previousState.userBalance = userBalance;
+    });
     return c.res({
       image: (
         <HolderStateDisplay
-          holder={holderState.holder}
+          holderAddy={holderState.holder}
           timeHeld={holderState.timeHeld}
           timeLeft={holderState.timeLeft}
-          balance={balance}
+          contractBalance={contractBalance}
+          userBalance={userBalance}
         />
       ),
       intents: [
@@ -109,9 +144,15 @@ app.frame("/intro", async (c) => {
 
 app.frame("/yoink", async (c) => {
   try {
-    const balance = await getBalance();
+    const { contractBalance, userBalance } = c.previousState;
+
     return c.res({
-      image: <YoinkMessage balance={balance} />,
+      image: (
+        <YoinkMessage
+          contractBalance={contractBalance}
+          userBalance={userBalance}
+        />
+      ),
       intents: [
         <Button.Transaction target="/yoink-flag" action="/yoinked">
           Yoink for 10 MOXIE 😈
@@ -128,7 +169,9 @@ app.frame("/yoink", async (c) => {
 
 app.frame("/yoinked", async (c) => {
   try {
-    const adjustedBalance = adjustBalance(await getBalance());
+    const adjustedBalance = adjustBalance(
+      await getBalance(process.env.YOINK_ADDRESS as string)
+    );
     const multiplier = calculateMultiplier(adjustedBalance.toString(), 10);
     return c.res({
       image: <YoinkedMessage multiplier={multiplier} />,
@@ -140,6 +183,14 @@ app.frame("/yoinked", async (c) => {
       statusCode: 400,
     });
   }
+});
+
+app.frame("/claimed", async (c) => {
+  const balance = await getBalance(process.env.YOINK_ADDRESS as string);
+  return c.res({
+    image: <ClaimedImage balance={balance} />,
+    intents: [],
+  });
 });
 
 app.transaction("/approve", (c) => {
@@ -157,6 +208,17 @@ app.transaction("/approve", (c) => {
 });
 
 app.transaction("/yoink-flag", (c) => {
+  return c.contract({
+    abi: YoinkABI,
+    functionName: "yoink",
+    args: [],
+    chainId: "eip155:11155111",
+    to: process.env.YOINK_ADDRESS as `0x${string}`,
+    value: BigInt(0),
+  });
+});
+
+app.transaction("/claim", (c) => {
   return c.contract({
     abi: YoinkABI,
     functionName: "yoink",

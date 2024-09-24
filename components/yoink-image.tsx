@@ -2,10 +2,11 @@ import { BigNumber } from "ethers";
 import { formatBalance } from "../utils/format";
 
 type ApprovedMessageProps = {
-  balance: BigNumber;
+  userBalance: BigNumber;
+  contractBalance: BigNumber;
 };
 
-function YoinkMessage({ balance }: ApprovedMessageProps) {
+function YoinkMessage({ contractBalance, userBalance }: ApprovedMessageProps) {
   return (
     <div
       style={{
@@ -18,8 +19,24 @@ function YoinkMessage({ balance }: ApprovedMessageProps) {
         justifyContent: "center",
         textAlign: "center",
         width: "100%",
+        position: "relative",
       }}
     >
+      <div
+        style={{
+          position: "absolute",
+          top: 20,
+          right: 20,
+          color: "black",
+          display: "flex",
+          fontSize: 24,
+          fontStyle: "normal",
+          letterSpacing: "-0.025em",
+          lineHeight: 1.4,
+        }}
+      >
+        balance: {formatBalance(userBalance)} MOXIE
+      </div>
       <div
         style={{
           color: "green",
@@ -45,7 +62,8 @@ function YoinkMessage({ balance }: ApprovedMessageProps) {
           whiteSpace: "pre-wrap",
         }}
       >
-        yoink and hodl for 24 hours to win {formatBalance(balance)} MOXIE
+        yoink and hodl for 24 hours to win {formatBalance(contractBalance)}{" "}
+        MOXIE
       </div>
     </div>
   );

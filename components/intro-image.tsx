@@ -2,17 +2,19 @@ import { BigNumber } from "ethers";
 import { formatBalance } from "../utils/format.js";
 
 interface HolderStateDisplayProps {
-  holder: string;
+  holderAddy: string;
   timeHeld: string;
   timeLeft: string;
-  balance: BigNumber;
+  contractBalance: BigNumber;
+  userBalance: BigNumber;
 }
 
 const HolderStateDisplay = ({
-  holder,
+  holderAddy,
   timeHeld,
   timeLeft,
-  balance,
+  contractBalance,
+  userBalance,
 }: HolderStateDisplayProps) => (
   <div
     style={{
@@ -25,8 +27,24 @@ const HolderStateDisplay = ({
       justifyContent: "center",
       textAlign: "center",
       width: "100%",
+      position: "relative", // Added to position the balance display
     }}
   >
+    <div
+      style={{
+        position: "absolute",
+        top: 20,
+        right: 20,
+        color: "black",
+        display: "flex",
+        fontSize: 24,
+        fontStyle: "normal",
+        letterSpacing: "-0.025em",
+        lineHeight: 1.4,
+      }}
+    >
+      balance: {formatBalance(userBalance)} MOXIE
+    </div>
     <div
       style={{
         color: "green",
@@ -39,7 +57,7 @@ const HolderStateDisplay = ({
         whiteSpace: "pre-wrap",
       }}
     >
-      {holder} has the flag
+      {holderAddy} has the flag
     </div>
     <div
       style={{
@@ -69,7 +87,7 @@ const HolderStateDisplay = ({
         whiteSpace: "pre-wrap",
       }}
     >
-      {timeLeft} left before winning {formatBalance(balance)} MOXIE
+      {timeLeft} left before winning {formatBalance(contractBalance)} MOXIE
     </div>
   </div>
 );
