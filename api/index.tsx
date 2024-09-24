@@ -1,6 +1,4 @@
 import { Button, Frog } from "frog";
-import { devtools } from "frog/dev";
-import { serveStatic } from "frog/serve-static";
 import { handle } from "frog/vercel";
 import MoxieABI from "../constants/erc20abi.json";
 import YoinkABI from "../constants/yoinkabi.json";
@@ -228,9 +226,6 @@ app.transaction("/claim", (c) => {
     value: BigInt(0),
   });
 });
-
-const isProduction = import.meta.env?.MODE !== "development";
-devtools(app, isProduction ? { assetsPath: "/.frog" } : { serveStatic });
 
 export const GET = handle(app);
 export const POST = handle(app);
