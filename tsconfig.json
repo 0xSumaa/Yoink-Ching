@@ -19,6 +19,7 @@
     "noFallthroughCasesInSwitch": true,
     "types": ["frog/client"]
   },
+  
   "include": ["**/*.ts", "**/*.tsx", "**/*.mtsx"],
   "exclude": ["node_modules"]
 }
