@@ -1,5 +1,5 @@
 import { BigNumber } from "ethers";
-import { formatBalance } from "../utils/format";
+import { formatBalance } from "../utils/format.js";
 
 type ApprovedMessageProps = {
   userBalance: BigNumber;
