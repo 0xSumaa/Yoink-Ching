@@ -9,6 +9,7 @@
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
+    
     "jsxImportSource": "frog/jsx",
 
     /* Linting */
