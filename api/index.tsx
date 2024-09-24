@@ -98,7 +98,7 @@ app.frame("/intro", async (c) => {
     if (!canProceed) {
       return c.res({
         image: <RateLimitMessage />,
-        intents: [<Button action="/">Go Back</Button>],
+        intents: [<Button action="/api">Go Back</Button>],
       });
     }
 
