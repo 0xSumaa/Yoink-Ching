@@ -1,4 +1,6 @@
 import { Button, Frog } from "frog";
+import { devtools } from "frog/dev";
+import { serveStatic } from "frog/serve-static";
 import { handle } from "frog/vercel";
 import MoxieABI from "../constants/erc20abi.json";
 import YoinkABI from "../constants/yoinkabi.json";
@@ -34,7 +36,7 @@ export const app = new Frog<{ State: State }>({
     userBalance: BigNumber.from(0),
   },
   assetsPath: "/",
-  basePath: "/",
+  basePath: "/api",
   title: "Yoink-Ching",
   browserLocation: "https://warpcast.com/sumaa",
 }).use(
@@ -45,11 +47,11 @@ export const app = new Frog<{ State: State }>({
 );
 const hono = app.hono;
 
-hono.get("/", async (c) => {
-  return c.html(landingPage);
-});
+// hono.get("/", async (c) => {
+//   return c.html(landingPage);
+// });
 
-app.frame("/api", async (c) => {
+app.frame("/", async (c) => {
   try {
     const { holderAddy, contractBalance, gameInProgress } =
       await getGameState();
@@ -96,7 +98,7 @@ app.frame("/intro", async (c) => {
     if (!canProceed) {
       return c.res({
         image: <RateLimitMessage />,
-        intents: [<Button action="/api">Go Back</Button>],
+        intents: [<Button action="/">Go Back</Button>],
       });
     }
 
@@ -226,6 +228,9 @@ app.transaction("/claim", (c) => {
     value: BigInt(0),
   });
 });
+
+const isProduction = import.meta.env?.MODE !== "development";
+devtools(app, isProduction ? { assetsPath: "/.frog" } : { serveStatic });
 
 export const GET = handle(app);
 export const POST = handle(app);
