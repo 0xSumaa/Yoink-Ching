@@ -108,7 +108,7 @@ app.frame("/intro", async (c) => {
     const { holderState, contractBalance, userBalance, sufficientApproval } =
       await getHolderState(walletAddress);
 
-    const state = c.deriveState((previousState) => {
+    c.deriveState((previousState) => {
       previousState.contractBalance = contractBalance;
       previousState.userBalance = userBalance;
     });
